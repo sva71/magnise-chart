@@ -1,0 +1,52 @@
+<mat-dialog-content class="mat-typography">
+  <span>{{ status }}</span>
+  <form [formGroup]="settingsForm">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-subtitle>Historical Chart Parameters</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="flex flex-col">
+          <mat-radio-group formControlName="historicalChartType">
+            <mat-radio-button value="count-back">Count Back</mat-radio-button>
+            <mat-radio-button value="date-range">Date Range</mat-radio-button>
+          </mat-radio-group>
+          <mat-form-field>
+            <mat-label>Interval</mat-label>
+            <input matInput type="number" formControlName="interval" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Periodicity</mat-label>
+            <mat-select formControlName="periodicity">
+              <mat-option value="minute">Minute</mat-option>
+              <mat-option value="hour">Hour</mat-option>
+              <mat-option value="day">Day</mat-option>
+            </mat-select>
+          </mat-form-field>
+          @if (settingsForm.value['historicalChartType'] === 'count-back') {
+            <mat-form-field>
+              <mat-label>Bars Count</mat-label>
+              <input matInput type="number" formControlName="barsCount" />
+            </mat-form-field>
+          }
+          @if (settingsForm.value['historicalChartType'] === 'date-range') {
+            <mat-form-field>
+              <mat-label>Enter a date range</mat-label>
+              <mat-date-range-picker #picker></mat-date-range-picker>
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-date-range-input [rangePicker]="picker">
+                <input matStartDate placeholder="Start date" formControlName="dateFrom">
+                <input matEndDate placeholder="End date" formControlName="dateTo">
+              </mat-date-range-input>
+            </mat-form-field>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-raised-button [mat-dialog-close]="false">CANCEL</button>
+    <button mat-raised-button color="primary" [disabled]="!settingsForm.valid" (click)="onSubmit()">OK</button>
+</mat-dialog-actions>

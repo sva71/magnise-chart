@@ -1,0 +1,91 @@
+<div class="grid grid-cols-2">
+  <mat-card>
+    <mat-card-content>
+      <div class="flex-row items-center" style="display: flex;">
+        <mat-form-field>
+          <mat-label>Select Provider</mat-label>
+          <mat-select [(ngModel)]="selectedProvider" (selectionChange)="providerChanged()">
+            @for (finProvider of finProviders | async; track finProvider) {
+              <mat-option [value]="finProvider">{{ finProvider }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="ml-4">
+          <input
+            type="text"
+            matInput
+            placeholder="Select Instrument"
+            [disabled]="loading"
+            [(ngModel)]="typedSymbol"
+            [matAutocomplete]="auto"
+            (input)="instrumentInput()"
+          />
+          <mat-autocomplete #auto="matAutocomplete" (opened)="registerPanelScrollEvent()">
+            @for (instrument of instruments; track instrument.id) {
+              <mat-option [value]="instrument.symbol" (onSelectionChange)="selectedInstrument = instrument">{{ instrument.symbol }}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+        <button
+          class="ml-4"
+          mat-raised-button
+          [color]="isActiveSubscription ? 'warn' : 'primary'"
+          [disabled]="!selectedInstrument"
+          (click)="wsSubscribe()"
+        >
+          {{ isActiveSubscription ? 'STOP' : 'START' }} LIVE SESSION
+        </button>
+        <button class="ml-4" mat-raised-button color="primary" [disabled]="!selectedInstrument" (click)="openSettingsDialog()">HISTORICAL...</button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Market Data</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (subscribedInstrument) {
+        <div class="flex flex-row justify-around">
+          <div class="text-center">
+            <mat-card-subtitle>Provider:</mat-card-subtitle>
+            <mat-card-title>{{ subscribedProvider || selectedProvider }}</mat-card-title>
+          </div>
+          <div class="text-center">
+            <mat-card-subtitle>Symbol:</mat-card-subtitle>
+            <mat-card-title>{{ subscribedInstrument.symbol }}</mat-card-title>
+          </div>
+          @if (chartType === 'live' && isActiveSubscription) {
+            <div class="min-w-28 text-center">
+              <mat-card-subtitle>Price:</mat-card-subtitle>
+              <mat-card-title>{{ lastPrice }}</mat-card-title>
+            </div>
+            <div class="text-center">
+              <mat-card-subtitle>Time:</mat-card-subtitle>
+              <mat-card-title>{{ lastTime }}</mat-card-title>
+            </div>
+          }
+          @if (chartType === 'historical') {
+            <div class="min-w-28 text-center">
+              <mat-card-subtitle>Historical Chart:</mat-card-subtitle>
+              <mat-card-title>{{ historicalSettings.historicalChartType }}</mat-card-title>
+            </div>
+            @if (historicalSettings.historicalChartType === 'count-back') {
+              <div class="min-w-28 text-center">
+                <mat-card-subtitle>Bar Counts:</mat-card-subtitle>
+                <mat-card-title>{{ historicalSettings.barsCount }}</mat-card-title>
+              </div>
+            }
+            @if (historicalSettings.historicalChartType === 'date-range') {
+              <div class="min-w-28 text-center">
+                <mat-card-subtitle>Date Range:</mat-card-subtitle>
+                <mat-card-title>
+                  {{ historicalSettings.dateFrom | date:'yyyy-MM-dd' }} - {{ historicalSettings.dateTo | date:'yyyy-MM-dd' }}
+                </mat-card-title>
+              </div>
+            }
+          }
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
