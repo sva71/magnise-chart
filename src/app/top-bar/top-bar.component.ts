@@ -13,7 +13,7 @@ import {
   MatCardTitle,
 } from '@angular/material/card';
 import { DataService, IHistoricalSettings } from '../services/data.service';
-import {Observable, Subscription, tap} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import {
   MatOption,
@@ -30,15 +30,15 @@ import { MatDialog } from '@angular/material/dialog';
 import moment from 'moment';
 import { FinProvider } from '../services/types/FinProvider';
 import { Instrument } from '../services/types/Instrument';
-import {ChartType, PaginationResp} from '../services/apiRoutes/utils';
+import { ChartType, PaginationResp } from '../services/apiRoutes/utils';
 import { FormsModule } from '@angular/forms';
 import {
   CdkVirtualForOf,
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
-import {MatAutocomplete, MatAutocompleteTrigger} from "@angular/material/autocomplete";
-import {MatInput} from "@angular/material/input";
-import {AsyncPipe, DatePipe} from "@angular/common";
+import { MatAutocomplete, MatAutocompleteTrigger } from "@angular/material/autocomplete";
+import { MatInput } from "@angular/material/input";
+import { AsyncPipe, DatePipe } from "@angular/common";
 
 @Component({
   selector: 'app-top-bar',
@@ -76,7 +76,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   status = '';
   loading = false;
 
-  finProviders: Observable<FinProvider[]> = this.dataService.loadProviders().pipe(tap(() => this.dataService.statusData$.next('Providers loaded')));
+  finProviders: Observable<FinProvider[]> = this.dataService.loadProviders();
   instruments: Instrument[] = [];
   instrumentsPaging: PaginationResp = { page: 0, pages: 0, items: 0 };
   historicalSettings: IHistoricalSettings;
@@ -124,7 +124,6 @@ export class TopBarComponent implements OnInit, OnDestroy {
     this.dataService.historicalSettings$.subscribe(
       (s) => (this.historicalSettings = s),
     );
-    this.dataService.statusData$.next('Reading providers...');
     this.socketSubscription = this.webSocket.connect().subscribe({
       next: (msg) => {
         if (msg.type === 'l1-update') {
@@ -169,7 +168,6 @@ export class TopBarComponent implements OnInit, OnDestroy {
   getProvidersInstruments() {
     const symbol = this.typedSymbol;
     this.selectedInstrument = null;
-    this.dataService.statusData$.next('Reading instruments...');
     this.loading = true;
     this.dataService
       .loadInstruments({
@@ -185,7 +183,6 @@ export class TopBarComponent implements OnInit, OnDestroy {
             ? (this.instruments = [...resp.data])
             : this.instruments.push(...resp.data);
           this.instrumentsPaging = { ...resp.paging };
-          this.dataService.statusData$.next('Instruments loaded');
         },
         error: (err) => console.error(err),
         complete: () => (this.loading = false),

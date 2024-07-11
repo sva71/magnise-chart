@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {Subject, Observable, map} from 'rxjs';
+import {Subject, Observable, map, tap} from 'rxjs';
 import * as Routes from './apiRoutes';
 import {
   ChartPeriodicity,
@@ -70,20 +70,22 @@ export class DataService {
   constructor(private httpClient: HttpClient) {}
 
   loadProviders(): Observable<FinProvider[]> {
+    this.statusData$.next('Reading providers...');
     return this.httpClient.request<Routes.ListProviders.Resp>(
       Routes.ListProviders.method,
       Routes.ListProviders.route,
-    ).pipe(map(res => res.data));
+    ).pipe(map(res => res.data)).pipe(tap(() => this.statusData$.next('Providers loaded')));
   }
 
   loadInstruments(
     arg: Routes.ListInstruments.Arg,
   ): Observable<Routes.ListInstruments.Resp> {
+    this.statusData$.next('Reading instruments...');
     return this.httpClient.request<Routes.ListInstruments.Resp>(
       Routes.ListInstruments.method,
       Routes.ListInstruments.route,
       { params: arg },
-    );
+    ).pipe(tap(() => this.statusData$.next('Instruments loaded')));
   }
 
   loadExchanges(
